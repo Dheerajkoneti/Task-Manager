@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
-dotenv.config(); // ✅ correct for local + Render
+
+/* 🔥 LOAD ENV FIRST */
+dotenv.config();
 
 import express from "express";
 import cors from "cors";
@@ -12,14 +14,21 @@ connectDB();
 
 const app = express();
 
+/* 🌐 Middleware */
 app.use(cors());
 app.use(express.json());
 
+/* ✅ Health check (ROOT ROUTE) */
+app.get("/", (_req, res) => {
+  res.send("🚀 Task Manager API is running");
+});
+
+/* 🔐 Routes */
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 
+/* 🚀 Start server */
 const PORT = process.env.PORT || 10000;
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
