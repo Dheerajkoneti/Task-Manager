@@ -1,0 +1,98 @@
+/* PAGE BACKGROUND */
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+      rgba(2, 6, 23, 0.78),
+      rgba(2, 6, 23, 0.78)
+    ),
+    url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80")
+      center / cover no-repeat;
+}
+
+/* CARD */
+.register-card {
+  width: 380px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 22px;
+  padding: 34px 30px;
+  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+/* TITLE */
+.register-card h1 {
+  font-size: 26px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+/* INPUTS */
+.register-card input {
+  width: 100%;
+  height: 46px;
+  margin-bottom: 14px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+}
+
+.register-card input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+/* BUTTON */
+.register-card button {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  border: none;
+  margin-top: 6px;
+
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.register-card button:hover {
+  transform: translateY(-2px);
+}
+
+/* LINKS */
+.links {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.links span {
+  font-size: 13px;
+  font-weight: 800;
+  color: #4f46e5;
+  cursor: pointer;
+}
+
+.links span:hover {
+  text-decoration: underline;
+}
+
+.links .forgot {
+  color: #ef4444;
+}
