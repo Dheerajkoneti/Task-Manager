@@ -3,20 +3,22 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Redirect root to login */}
+      {/* Redirect root */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Public routes */}
+      {/* ✅ PUBLIC ROUTES */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-      {/* Protected routes */}
+      {/* ✅ PROTECTED ROUTES */}
       <Route
         path="/dashboard"
         element={
@@ -26,7 +28,7 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Fallback route */}
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

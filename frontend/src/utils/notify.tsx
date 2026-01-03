@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 
 /* ===============================
-   REQUEST PERMISSION (ONCE)
+   REQUEST PERMISSION
 ================================ */
 export const requestNotificationPermission = async () => {
   if (!("Notification" in window)) return;
@@ -14,11 +14,8 @@ export const requestNotificationPermission = async () => {
 /* ===============================
    MAIN NOTIFICATION FUNCTION
 ================================ */
-export const notifyTask = (
-  message: string,
-  progress?: number
-) => {
-  /* 🔔 1️⃣ SYSTEM / BROWSER NOTIFICATION */
+export const notifyTask = (message: string, progress?: number) => {
+  // Browser notification
   if ("Notification" in window && Notification.permission === "granted") {
     new Notification("⏰ Task Manager", {
       body: message,
@@ -26,7 +23,7 @@ export const notifyTask = (
     });
   }
 
-  /* 🔥 2️⃣ IN-APP ANIMATED TOAST */
+  // In-app toast
   toast.custom(
     () => (
       <div
@@ -37,7 +34,6 @@ export const notifyTask = (
           borderRadius: "14px",
           minWidth: "260px",
           boxShadow: "0 20px 40px rgba(0,0,0,0.45)",
-          animation: "bounceIn 0.6s ease",
         }}
       >
         <strong>{message}</strong>
@@ -56,8 +52,7 @@ export const notifyTask = (
               style={{
                 width: `${progress}%`,
                 height: "100%",
-                background:
-                  progress >= 100 ? "#22c55e" : "#6366f1",
+                background: progress >= 100 ? "#22c55e" : "#6366f1",
                 transition: "width 1s linear",
               }}
             />
