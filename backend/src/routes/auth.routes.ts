@@ -18,6 +18,7 @@ router.post("/register", async (req, res) => {
     if (existing) {
       return res.status(409).json({ message: "User already exists" });
     }
+
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -39,12 +40,13 @@ router.post("/register", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-      }
+      },
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 /* =========================
    LOGIN
 ========================= */
@@ -76,16 +78,13 @@ router.post("/login", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-      }
+      },
     });
   } catch {
     res.status(500).json({ message: "Server error" });
   }
 });
 
-/* =========================
-   FORGOT PASSWORD
-========================= */
 /* =========================
    FORGOT PASSWORD
 ========================= */
@@ -96,39 +95,36 @@ router.post("/forgot-password", async (req, res) => {
 
     console.log("🔥 FORGOT PASSWORD:", emailLower);
 
-    // 🔍 Find user (case-safe)
     const user = await User.findOne({ email: emailLower });
-
-    // 🛡️ Security-safe response
     if (!user) {
+      // Security-safe response
       return res.json({ message: "If email exists, reset link sent" });
     }
 
-    // 🔐 Create reset token
     const resetToken = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET!,
       { expiresIn: "15m" }
     );
 
-    // 🌍 Use frontend URL from ENV
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
     console.log("🔗 RESET LINK:", resetLink);
 
-    // 📧 Gmail transporter (Render-safe)
+    // 📧 Brevo SMTP transporter
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: false, // STARTTLS
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-      secure: true,
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
     });
 
-    // ✉️ Send email
     await transporter.sendMail({
-      from: `"Task Manager" <${process.env.EMAIL_USER}>`,
+      from: `"Task Manager" <dheerajkoneti2412@gmail.com>`, // VERIFIED SENDER
       to: emailLower,
       subject: "Reset your password",
       html: `
@@ -140,7 +136,6 @@ router.post("/forgot-password", async (req, res) => {
     });
 
     console.log("✅ RESET EMAIL SENT");
-
     res.json({ message: "Reset link sent to email" });
 
   } catch (error) {
@@ -148,7 +143,6 @@ router.post("/forgot-password", async (req, res) => {
     res.status(500).json({ message: "Failed to send reset email" });
   }
 });
-
 
 /* =========================
    RESET PASSWORD
@@ -158,20 +152,16 @@ router.post("/reset-password/:token", async (req, res) => {
     const { password } = req.body;
     const { token } = req.params;
 
-    // 🔐 Verify token
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
 
-    // 🔒 Hash new password
     const hashed = await bcrypt.hash(password, 10);
 
-    // 💾 Update password
     await User.findByIdAndUpdate(decoded.id, {
       password: hashed,
     });
 
     res.json({ message: "Password reset successful" });
-
-  } catch (error) {
+  } catch {
     res.status(400).json({ message: "Invalid or expired token" });
   }
 });
