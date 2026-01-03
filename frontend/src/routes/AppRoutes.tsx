@@ -9,16 +9,15 @@ import ProtectedRoute from "./ProtectedRoute";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Redirect root */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* ✅ PUBLIC ROUTES */}
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-      {/* ✅ PROTECTED ROUTES */}
+      {/* Protected */}
       <Route
         path="/dashboard"
         element={
