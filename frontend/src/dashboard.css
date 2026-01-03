@@ -821,3 +821,31 @@
     margin: auto;
   }
 }
+@media (max-width: 768px) {
+  .add-task-bar {
+    flex-direction: column;
+  }
+
+  .add-task-bar input,
+  .add-task-bar select,
+  .add-task-bar button {
+    width: 100%;
+  }
+
+  .focus-content {
+    width: 92%;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+
+  .task {
+    font-size: 13px;
+  }
+}
