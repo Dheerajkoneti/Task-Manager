@@ -849,3 +849,31 @@
     font-size: 13px;
   }
 }
+/* 📱 MOBILE: Stack columns vertically */
+@media (max-width: 768px) {
+  .board {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .column {
+    width: 100%;
+  }
+
+  .column h2 {
+    text-align: center;
+    font-size: 16px;
+  }
+}
+
+/* 📱 Small phones (≤ 480px) */
+@media (max-width: 480px) {
+  .column {
+    padding: 0;
+  }
+
+  .task {
+    margin-bottom: 10px;
+  }
+}
