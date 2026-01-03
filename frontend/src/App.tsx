@@ -6,12 +6,14 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+
 import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
 
 export default function App() {
   return (
     <>
-      {/* 🔔 Global Toasts */}
+      {/* 🔔 Global Toast Notifications */}
       <Toaster
         position="top-right"
         toastOptions={{
@@ -24,18 +26,49 @@ export default function App() {
         }}
       />
 
-      {/* 🧭 Routes */}
+      {/* 🧭 Application Routes */}
       <Routes>
-        {/* Redirect root */}
+        {/* Root redirect */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* ✅ Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        {/* 🌐 PUBLIC ROUTES (force logout) */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
 
-        {/* 🔐 Protected Route */}
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/reset-password/:token"
+          element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          }
+        />
+
+        {/* 🔐 PROTECTED ROUTE */}
         <Route
           path="/dashboard"
           element={
