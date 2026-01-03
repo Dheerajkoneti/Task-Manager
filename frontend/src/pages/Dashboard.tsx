@@ -3,9 +3,7 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import "../dashboard.css";
-
 import { notifyTask, requestNotificationPermission } from "../utils/notify";
-import { playSoftSound } from "../utils/sound";
 import { startFocusSound, stopFocusSound } from "../utils/focusSound";
 import {
   checkUpcomingTasks,
@@ -176,7 +174,6 @@ export default function Dashboard() {
       ) {
         await api.put(`/tasks/${task._id}`, { status: "INPROGRESS" });
         notifyTask(`🚀 Started: ${task.title}`);
-        playSoftSound();
         prevStatus.current[task._id] = "INPROGRESS";
         changed = true;
       }
@@ -189,7 +186,6 @@ export default function Dashboard() {
       ) {
         await api.put(`/tasks/${task._id}`, { status: "MISSED" });
         notifyTask(`❌ Missed: ${task.title}`);
-        playSoftSound();
         prevStatus.current[task._id] = "MISSED";
         changed = true;
       }
@@ -208,10 +204,7 @@ useEffect(() => {
   if (now >= end) {
     (async () => {
       await api.put(`/tasks/${focusTask._id}`, { status: "DONE" });
-
       notifyTask(`✅ Completed by focus: ${focusTask.title}`);
-      playSoftSound();
-
       setFocusTask(null);
       fetchTasks();
     })();
