@@ -14,16 +14,7 @@ export default function ResetPassword() {
   const [checkingToken, setCheckingToken] = useState(true);
 
   /**
-   * ✅ IMPORTANT:
-   * Reset password must behave like a LOGGED-OUT page
-   * Otherwise dashboard auto-redirect happens
-   */
-  useEffect(() => {
-    localStorage.removeItem("token");
-  }, []);
-
-  /**
-   * ✅ Guard invalid / missing token
+   * ✅ Validate reset token from URL
    */
   useEffect(() => {
     if (!token) {
@@ -34,6 +25,9 @@ export default function ResetPassword() {
     setCheckingToken(false);
   }, [token, navigate]);
 
+  /**
+   * 🔑 Handle password reset
+   */
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -61,7 +55,6 @@ export default function ResetPassword() {
 
       toast.success("✅ Password reset successful");
       navigate("/login", { replace: true });
-
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
@@ -73,7 +66,7 @@ export default function ResetPassword() {
   };
 
   /**
-   * ⛔ Prevent UI render until token is validated
+   * ⛔ Prevent render until token is checked
    */
   if (checkingToken) return null;
 
