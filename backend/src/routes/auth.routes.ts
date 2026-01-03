@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import axios from "axios";
 import User from "../models/User";
 
 const router = Router();
@@ -86,7 +86,7 @@ router.post("/login", async (req, res) => {
 });
 
 /* =========================
-   FORGOT PASSWORD
+   FORGOT PASSWORD (BREVO API)
 ========================= */
 router.post("/forgot-password", async (req, res) => {
   try {
@@ -110,30 +110,34 @@ router.post("/forgot-password", async (req, res) => {
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     console.log("🔗 RESET LINK:", resetLink);
 
-    // 📧 Brevo SMTP transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: false, // STARTTLS
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+    // 📧 SEND EMAIL USING BREVO EMAIL API (HTTP)
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "Task Manager",
+          email: "dheerajkoneti2412@gmail.com", // MUST be verified in Brevo
+        },
+        to: [
+          {
+            email: emailLower,
+          },
+        ],
+        subject: "Reset your password",
+        htmlContent: `
+          <h3>Password Reset</h3>
+          <p>Click the link below to reset your password:</p>
+          <a href="${resetLink}">${resetLink}</a>
+          <p>This link expires in 15 minutes.</p>
+        `,
       },
-      connectionTimeout: 10000,
-      socketTimeout: 10000,
-    });
-
-    await transporter.sendMail({
-      from: `"Task Manager" <dheerajkoneti2412@gmail.com>`, // VERIFIED SENDER
-      to: emailLower,
-      subject: "Reset your password",
-      html: `
-        <h3>Password Reset</h3>
-        <p>Click the link below to reset your password:</p>
-        <a href="${resetLink}">${resetLink}</a>
-        <p>This link expires in 15 minutes.</p>
-      `,
-    });
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY!,
+          "content-type": "application/json",
+        },
+      }
+    );
 
     console.log("✅ RESET EMAIL SENT");
     res.json({ message: "Reset link sent to email" });
