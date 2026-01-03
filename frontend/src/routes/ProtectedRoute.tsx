@@ -8,7 +8,7 @@ export default function ProtectedRoute({
   const token = localStorage.getItem("token");
   const location = useLocation();
 
-  // ✅ Allow reset-password even if token exists
+  // ✅ Allow reset password route EVEN if token exists
   if (location.pathname.startsWith("/reset-password")) {
     return children;
   }
