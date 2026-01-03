@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../api/axios";
@@ -11,6 +11,14 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  /* ✅ Guard: Invalid or missing token */
+  useEffect(() => {
+    if (!token) {
+      toast.error("Invalid or expired reset link");
+      navigate("/login", { replace: true });
+    }
+  }, [token, navigate]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,27 +33,39 @@ export default function ResetPassword() {
       return;
     }
 
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      await api.post(`/auth/reset-password/${token}`, { password });
-      toast.success("Password reset successful");
-      navigate("/login");
+      await api.post(`/auth/reset-password/${token}`, {
+        password,
+      });
+
+      toast.success("✅ Password reset successful");
+      navigate("/login", { replace: true });
 
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || "Reset link expired or invalid"
+        error?.response?.data?.message ||
+          "Reset link expired or invalid"
       );
     } finally {
       setLoading(false);
     }
   };
 
+  /* ⛔ Prevent render until token check finishes */
+  if (!token) return null;
+
   return (
     <div className="login-page">
       <div className="login-card">
         <h1>Reset Password 🔑</h1>
-        <p className="subtitle">Enter your new password</p>
+        <p className="subtitle">Create a new secure password</p>
 
         <form onSubmit={handleReset}>
           <input
@@ -53,6 +73,7 @@ export default function ResetPassword() {
             placeholder="New password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
             required
           />
 
@@ -61,6 +82,7 @@ export default function ResetPassword() {
             placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={loading}
             required
           />
 
