@@ -11,13 +11,27 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingToken, setCheckingToken] = useState(true);
 
-  /* ✅ Guard: Invalid or missing token */
+  /**
+   * ✅ IMPORTANT:
+   * Reset password must behave like a LOGGED-OUT page
+   * Otherwise dashboard auto-redirect happens
+   */
+  useEffect(() => {
+    localStorage.removeItem("token");
+  }, []);
+
+  /**
+   * ✅ Guard invalid / missing token
+   */
   useEffect(() => {
     if (!token) {
       toast.error("Invalid or expired reset link");
       navigate("/login", { replace: true });
+      return;
     }
+    setCheckingToken(false);
   }, [token, navigate]);
 
   const handleReset = async (e: React.FormEvent) => {
@@ -58,8 +72,10 @@ export default function ResetPassword() {
     }
   };
 
-  /* ⛔ Prevent render until token check finishes */
-  if (!token) return null;
+  /**
+   * ⛔ Prevent UI render until token is validated
+   */
+  if (checkingToken) return null;
 
   return (
     <div className="login-page">
