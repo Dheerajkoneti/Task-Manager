@@ -877,3 +877,14 @@
     margin-bottom: 10px;
   }
 }
+.weekly-graph {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 20px 0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.weekly-graph h2 {
+  margin-bottom: 12px;
+}
