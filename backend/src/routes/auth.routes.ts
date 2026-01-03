@@ -83,47 +83,53 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
+/* =========================
+   FORGOT PASSWORD
+========================= */
 /* =========================
    FORGOT PASSWORD
 ========================= */
 router.post("/forgot-password", async (req, res) => {
   try {
-    console.log("🔥 FORGOT PASSWORD API HIT");
-    console.log("📧 EMAIL RECEIVED:", req.body.email);
-
     const { email } = req.body;
+    const emailLower = email.toLowerCase();
 
-    const user = await User.findOne({ email });
+    console.log("🔥 FORGOT PASSWORD:", emailLower);
+
+    // 🔍 Find user (case-safe)
+    const user = await User.findOne({ email: emailLower });
+
+    // 🛡️ Security-safe response
     if (!user) {
-      console.log("⚠️ USER NOT FOUND (SECURITY RESPONSE)");
       return res.json({ message: "If email exists, reset link sent" });
     }
 
+    // 🔐 Create reset token
     const resetToken = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET!,
       { expiresIn: "15m" }
     );
 
-    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    // 🌍 Use frontend URL from ENV
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
     console.log("🔗 RESET LINK:", resetLink);
 
+    // 📧 Gmail transporter (Render-safe)
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      secure: true,
     });
 
-    // 🔍 VERIFY TRANSPORTER
-    await transporter.verify();
-    console.log("✅ Nodemailer transporter verified");
-
+    // ✉️ Send email
     await transporter.sendMail({
       from: `"Task Manager" <${process.env.EMAIL_USER}>`,
-      to: email,
+      to: emailLower,
       subject: "Reset your password",
       html: `
         <h3>Password Reset</h3>
@@ -133,7 +139,8 @@ router.post("/forgot-password", async (req, res) => {
       `,
     });
 
-    console.log("✅ EMAIL SENT SUCCESSFULLY");
+    console.log("✅ RESET EMAIL SENT");
+
     res.json({ message: "Reset link sent to email" });
 
   } catch (error) {
@@ -147,20 +154,24 @@ router.post("/forgot-password", async (req, res) => {
    RESET PASSWORD
 ========================= */
 router.post("/reset-password/:token", async (req, res) => {
-  const { password } = req.body;
-  const { token } = req.params;
-
   try {
+    const { password } = req.body;
+    const { token } = req.params;
+
+    // 🔐 Verify token
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
 
+    // 🔒 Hash new password
     const hashed = await bcrypt.hash(password, 10);
 
+    // 💾 Update password
     await User.findByIdAndUpdate(decoded.id, {
       password: hashed,
     });
 
     res.json({ message: "Password reset successful" });
-  } catch {
+
+  } catch (error) {
     res.status(400).json({ message: "Invalid or expired token" });
   }
 });
