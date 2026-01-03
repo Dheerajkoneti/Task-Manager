@@ -3,8 +3,8 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import "../dashboard.css";
-import { notifyTask, requestNotificationPermission } from "../utils/notify";
 import { startFocusSound, stopFocusSound } from "../utils/focusSound";
+import { notifyTask, requestNotificationPermission } from "../utils/notify";
 import {
   checkUpcomingTasks,
   sendStreakReminder,
@@ -30,7 +30,6 @@ type Task = {
   endTime: string;
   priority: "HIGH" | "MEDIUM" | "LOW";
 };
-
 const columns = [
   { key: "TODO", label: "TODO" },
   { key: "INPROGRESS", label: "IN PROGRESS" },
@@ -75,14 +74,19 @@ export default function Dashboard() {
 
   /* ================= FETCH ================= */
   const fetchTasks = async () => {
-    try {
-      const res = await api.get("/tasks");
-      setTasks(res.data);
-    } catch {
-      toast.error("Failed to load tasks");
-    }
-  };
-
+  try {
+    const res = await api.get("/tasks");
+    setTasks(
+      res.data.sort(
+        (a: Task, b: Task) =>
+          new Date(a.startTime).getTime() -
+          new Date(b.startTime).getTime()
+      )
+    );
+  } catch {
+    toast.error("Failed to load tasks");
+  }
+};
   /* ================= STREAK ================= */
   const calculateStreak = () => {
     let count = 0;
@@ -198,9 +202,7 @@ export default function Dashboard() {
 }, [tasks]);
 useEffect(() => {
   if (!focusTask) return;
-
   const end = new Date(focusTask.endTime).getTime();
-
   if (now >= end) {
     (async () => {
       await api.put(`/tasks/${focusTask._id}`, { status: "DONE" });
@@ -210,13 +212,10 @@ useEffect(() => {
     })();
   }
 }, [now, focusTask]);
-
-
   /* ================= ACTIONS ================= */
   const markDone = async (id: string) => {
     await api.put(`/tasks/${id}`, { status: "DONE" });
     toast.success("Task completed");
-
     setAiMessage(
       getMotivationalMessage({
         streak: streak + 1,
@@ -225,16 +224,13 @@ useEffect(() => {
         context: "task_done",
       })
     );
-
     fetchTasks();
   };
-
   const deleteTask = async (id: string) => {
     await api.delete(`/tasks/${id}`);
     toast.success("Task deleted");
     fetchTasks();
   };
-
   const startEdit = (task: Task) => {
     setEditTask(task);
     setTitle(task.title);
@@ -242,24 +238,43 @@ useEffect(() => {
     setEndTime(task.endTime);
     setPriority(task.priority);
   };
-
   /* ================= HELPERS ================= */
   const getCountdown = (end: string) => {
-    const diff = new Date(end).getTime() - now;
-    if (diff <= 0) return "⏰ Time over";
-    return `${Math.floor(diff / 60000)}m ${Math.floor(
-      (diff % 60000) / 1000
-    )}s left`;
-  };
+  const diff = new Date(end).getTime() - now;
 
-  const getProgressPercent = (task: Task) => {
-    const total =
-      new Date(task.endTime).getTime() -
-      new Date(task.startTime).getTime();
-    const remaining = Math.max(0, new Date(task.endTime).getTime() - now);
-    return total <= 0 ? 0 : (remaining / total) * 100;
-  };
+  if (diff <= 0) return "⏰ Time over";
 
+  const minutes = Math.floor(diff / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+
+  return `${minutes}m ${seconds}s left`;
+};
+const getProgressPercent = (task: Task) => {
+  const start = new Date(task.startTime).getTime();
+  const end = new Date(task.endTime).getTime();
+  const total = end - start;
+  const remaining = Math.max(0, end - now);
+
+  return total <= 0 ? 0 : (remaining / total) * 100;
+};
+const getWeeklyData = () => {
+  const days = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+
+    const label = d.toLocaleDateString("en-US", { weekday: "short" });
+
+    const completed = tasks.filter(
+      t =>
+        t.status === "DONE" &&
+        new Date(t.endTime).toDateString() === d.toDateString()
+    ).length;
+
+    return { day: label, completed };
+  });
+
+  return days;
+};
   /* ================= UI ================= */
   return (
     <div className="dashboard">
@@ -278,6 +293,17 @@ useEffect(() => {
         <div className="summary-pill info">⏱ Focus: {focusMinutes} mins</div>
         <div className="summary-pill danger">❌ Missed: {missedTasks}</div>
       </div>
+      <div className="weekly-graph">
+  <h2>📊 Weekly Productivity</h2>
+  <ResponsiveContainer width="100%" height={250}>
+    <BarChart data={getWeeklyData()}>
+      <XAxis dataKey="day" />
+      <YAxis allowDecimals={false} />
+      <Tooltip />
+      <Bar dataKey="completed" fill="#4CAF50" radius={[6, 6, 0, 0]} />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
       {/* ➕ ADD TASK BAR */}
 <div className="add-task-bar">
   <input
@@ -309,45 +335,56 @@ useEffect(() => {
   </select>
 
   <button
-    className="add-task-btn"
-    onClick={async () => {
-      if (!title || !startTime || !endTime) {
-        toast.error("All fields required");
-        return;
-      }
+  className="add-task-btn"
+  onClick={async () => {
+    if (!title || !startTime || !endTime) {
+      toast.error("All fields required");
+      return;
+    }
 
-      if (editTask) {
-        await api.put(`/tasks/${editTask._id}`, {
-          title,
-          startTime,
-          endTime,
-          priority,
-        });
-        toast.success("Task updated");
-        setEditTask(null);
-      } else {
-        await api.post("/tasks", {
-          title,
-          startTime,
-          endTime,
-          priority,
-          status: "TODO",
-        });
-        toast.success("Task added");
-      }
+    const start = new Date(startTime).getTime();
+    const end = new Date(endTime).getTime();
 
-      setTitle("");
-      setStartTime("");
-      setEndTime("");
-      setPriority("MEDIUM");
-      fetchTasks();
-    }}
-  >
-    {editTask ? "Update Task" : "Add Task"}
-  </button>
+    if (end <= start) {
+      toast.error("End time must be after start time");
+      return;
+    }
+
+    try {
+  if (editTask) {
+
+    await api.put(`/tasks/${editTask._id}`, {
+  title,
+  startTime: new Date(startTime).toISOString(),
+  endTime: new Date(endTime).toISOString(),
+  priority,
+});
+    toast.success("Task updated");
+    setEditTask(null);
+  } else {
+    await api.post("/tasks", {
+  title,
+  startTime: new Date(startTime).toISOString(),
+  endTime: new Date(endTime).toISOString(),
+  priority,
+  status: "TODO",
+});
+    toast.success("Task added");
+  }
+
+  setTitle("");
+  setStartTime("");
+  setEndTime("");
+  setPriority("MEDIUM");
+  fetchTasks();
+} catch {
+  toast.error("Failed to save task");
+}
+  }}
+>
+  {editTask ? "Update Task" : "Add Task"}
+</button>
 </div>
-
-
       {aiMessage && <div className="ai-message">🤖 {aiMessage}</div>}
 
       {/* BOARD */}
