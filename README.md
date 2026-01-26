@@ -45,7 +45,7 @@ A productivity-focused **full-stack task manager** designed to help users **plan
 ## 🔗 Live Links
 
 - 🌐 Frontend:  
-  https://task-manager-wda2.vercel.app
+  https://lnkd.in/gi9Vw8_5
 
 - 🔗 Backend API:  
   https://task-manager-8-un5t.onrender.com
@@ -58,4 +58,3 @@ A productivity-focused **full-stack task manager** designed to help users **plan
 - Managing authentication & protected routes
 - Improving UX with animations and focus-driven design
 
-# redeploy
