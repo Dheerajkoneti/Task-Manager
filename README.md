@@ -45,7 +45,7 @@ A productivity-focused **full-stack task manager** designed to help users **plan
 ## 🔗 Live Links
 
 - 🌐 Frontend:  
-  https://lnkd.in/gi9Vw8_5
+  https://task-manager4-steel.vercel.app/
 
 - 🔗 Backend API:  
   https://task-manager-8-un5t.onrender.com
